@@ -1,0 +1,28 @@
+{
+    "appId": "com.claudecowork.app",
+    "productName": "Claude Cowork",
+    "files": [
+        "dist-electron",
+        "dist-react"
+    ],
+    "extraResources": [
+        "dist-electron/preload.cjs"
+    ],
+    "asarUnpack": [
+        "node_modules/@anthropic-ai/claude-agent-sdk/**/*"
+    ],
+    "icon": "./claude-color.png",
+    "mac": {
+        "target": "dmg"
+    },
+    "linux": {
+        "target": "AppImage",
+        "category": "Utility"
+    },
+    "win": {
+        "target": [
+            "portable",
+            "msi"
+        ]
+    }
+}
