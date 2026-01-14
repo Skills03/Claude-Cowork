@@ -1,0 +1,42 @@
+{
+    "$schema": "https://claude.ai/schemas/settings.json",
+    "hooks": {
+        "UserPromptSubmit": [
+            {
+                "matcher": ".*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/skill-activation-prompt.ts\""
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Edit|MultiEdit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-tool-use-tracker.ts\""
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "matcher": ".*",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "npx tsx \"$CLAUDE_PROJECT_DIR/.claude/hooks/error-handling-reminder.ts\""
+                    }
+                ]
+            }
+        ]
+    },
+    "skills": {
+        "autoActivation": true,
+        "rulesPath": ".claude/skills/skill-rules.json"
+    }
+}

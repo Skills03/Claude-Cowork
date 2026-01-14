@@ -1,6 +1,7 @@
 {
     "appId": "com.claudecowork.app",
     "productName": "Claude Cowork",
+    "copyright": "Copyright © 2024 Claude Cowork",
     "files": [
         "dist-electron",
         "dist-react"
@@ -9,20 +10,82 @@
         "dist-electron/preload.cjs"
     ],
     "asarUnpack": [
-        "node_modules/@anthropic-ai/claude-agent-sdk/**/*"
+        "node_modules/@anthropic-ai/claude-agent-sdk/**/*",
+        "node_modules/better-sqlite3/**/*"
     ],
-    "icon": "./claude-color.png",
-    "mac": {
-        "target": "dmg"
+    "directories": {
+        "output": "release"
     },
-    "linux": {
-        "target": "AppImage",
-        "category": "Utility"
+    "mac": {
+        "target": [
+            {
+                "target": "dmg",
+                "arch": ["x64", "arm64"]
+            },
+            {
+                "target": "zip",
+                "arch": ["x64", "arm64"]
+            }
+        ],
+        "icon": "build/icon.png",
+        "category": "public.app-category.developer-tools",
+        "hardenedRuntime": true,
+        "gatekeeperAssess": false
+    },
+    "dmg": {
+        "contents": [
+            {
+                "x": 130,
+                "y": 220
+            },
+            {
+                "x": 410,
+                "y": 220,
+                "type": "link",
+                "path": "/Applications"
+            }
+        ]
     },
     "win": {
         "target": [
-            "portable",
-            "msi"
-        ]
-    }
+            {
+                "target": "nsis",
+                "arch": ["x64"]
+            },
+            {
+                "target": "portable",
+                "arch": ["x64"]
+            }
+        ],
+        "icon": "build/icon.png",
+        "signAndEditExecutable": false
+    },
+    "nsis": {
+        "oneClick": false,
+        "allowToChangeInstallationDirectory": true,
+        "createDesktopShortcut": true,
+        "createStartMenuShortcut": true,
+        "shortcutName": "Claude Cowork"
+    },
+    "linux": {
+        "target": [
+            {
+                "target": "AppImage",
+                "arch": ["x64"]
+            },
+            {
+                "target": "deb",
+                "arch": ["x64"]
+            },
+            {
+                "target": "rpm",
+                "arch": ["x64"]
+            }
+        ],
+        "icon": "build/icon.png",
+        "category": "Development",
+        "maintainer": "Claude Cowork",
+        "description": "Desktop AI assistant for programming and task automation"
+    },
+    "publish": null
 }

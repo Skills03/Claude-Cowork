@@ -1,0 +1,197 @@
+{
+    "version": "1.0",
+    "description": "Skill activation triggers for Claude Cowork. Controls when skills automatically suggest or block actions.",
+    "skills": {
+        "skill-developer": {
+            "type": "domain",
+            "enforcement": "suggest",
+            "priority": "high",
+            "description": "Meta-skill for creating and managing Claude Code skills",
+            "promptTriggers": {
+                "keywords": [
+                    "skill system",
+                    "create skill",
+                    "add skill",
+                    "skill triggers",
+                    "skill rules",
+                    "hook system",
+                    "skill development",
+                    "skill-rules.json"
+                ],
+                "intentPatterns": [
+                    "(how do|how does|explain).*?skill",
+                    "(create|add|modify|build).*?skill",
+                    "skill.*?(work|trigger|activate|system)"
+                ]
+            }
+        },
+        "backend-dev-guidelines": {
+            "type": "domain",
+            "enforcement": "suggest",
+            "priority": "high",
+            "description": "Electron/Backend development patterns for Node.js/TypeScript",
+            "promptTriggers": {
+                "keywords": [
+                    "backend",
+                    "electron",
+                    "main process",
+                    "ipc",
+                    "ipc handler",
+                    "preload",
+                    "runner",
+                    "session store",
+                    "database",
+                    "sqlite",
+                    "better-sqlite3"
+                ],
+                "intentPatterns": [
+                    "(create|add|implement|build).*?(ipc|handler|electron|main)",
+                    "(fix|handle|debug).*?(error|exception|backend|electron)",
+                    "(add|implement).*?(middleware|validation|error.*?handling)",
+                    "(how to|best practice).*?(electron|ipc|main process)"
+                ]
+            },
+            "fileTriggers": {
+                "pathPatterns": [
+                    "src/electron/**/*.ts",
+                    "src/electron/**/*.cts"
+                ],
+                "pathExclusions": [
+                    "**/*.test.ts",
+                    "**/*.spec.ts"
+                ],
+                "contentPatterns": [
+                    "ipcMain",
+                    "BrowserWindow",
+                    "electron",
+                    "better-sqlite3"
+                ]
+            }
+        },
+        "frontend-dev-guidelines": {
+            "type": "domain",
+            "enforcement": "suggest",
+            "priority": "high",
+            "description": "React 19/TypeScript best practices for Claude Cowork UI",
+            "promptTriggers": {
+                "keywords": [
+                    "component",
+                    "react component",
+                    "UI",
+                    "interface",
+                    "page",
+                    "modal",
+                    "dialog",
+                    "form",
+                    "styling",
+                    "frontend",
+                    "React",
+                    "zustand",
+                    "store",
+                    "tailwind"
+                ],
+                "intentPatterns": [
+                    "(create|add|make|build|update|modify|edit).*?(component|UI|page|modal|dialog|form)",
+                    "(how to|best practice).*?(component|react)",
+                    "(style|design|layout).*?(component|UI)"
+                ]
+            },
+            "fileTriggers": {
+                "pathPatterns": [
+                    "src/ui/**/*.tsx",
+                    "src/ui/**/*.ts"
+                ],
+                "pathExclusions": [
+                    "**/*.test.tsx",
+                    "**/*.test.ts",
+                    "**/*.spec.tsx",
+                    "**/*.spec.ts",
+                    "**/vite.config.ts",
+                    "**/tsconfig.json"
+                ],
+                "contentPatterns": [
+                    "from 'react'",
+                    "useState",
+                    "useEffect",
+                    "zustand",
+                    "useAppStore"
+                ]
+            }
+        },
+        "error-tracking": {
+            "type": "domain",
+            "enforcement": "suggest",
+            "priority": "high",
+            "description": "Error tracking and monitoring patterns",
+            "promptTriggers": {
+                "keywords": [
+                    "error handling",
+                    "exception",
+                    "error tracking",
+                    "monitoring",
+                    "logging"
+                ],
+                "intentPatterns": [
+                    "(add|create|implement|setup).*?(error handling|error tracking)",
+                    "(fix|handle|catch).*?(error|exception)",
+                    "(how to|best practice).*?(error|monitoring)"
+                ]
+            },
+            "fileTriggers": {
+                "pathPatterns": [
+                    "src/**/*.ts",
+                    "src/**/*.tsx"
+                ],
+                "contentPatterns": [
+                    "try\\s*\\{",
+                    "catch\\s*\\(",
+                    "throw new Error"
+                ]
+            }
+        },
+        "office-documents": {
+            "type": "domain",
+            "enforcement": "suggest",
+            "priority": "medium",
+            "description": "Create Microsoft Office documents (Word, Excel, PowerPoint)",
+            "promptTriggers": {
+                "keywords": [
+                    "word document",
+                    "excel",
+                    "spreadsheet",
+                    "powerpoint",
+                    "presentation",
+                    "docx",
+                    "xlsx",
+                    "pptx",
+                    "report",
+                    "document"
+                ],
+                "intentPatterns": [
+                    "(create|generate|make|write|build).*?(document|word|docx)",
+                    "(create|generate|make|build).*?(spreadsheet|excel|xlsx)",
+                    "(create|generate|make|build).*?(presentation|powerpoint|pptx|slides)",
+                    "(generate|create|make).*?report"
+                ]
+            }
+        }
+    },
+    "notes": {
+        "enforcement_types": {
+            "suggest": "Skill suggestion appears but doesn't block execution",
+            "block": "Requires skill to be used before proceeding (guardrail)",
+            "warn": "Shows warning but allows proceeding"
+        },
+        "priority_levels": {
+            "critical": "Highest - Always trigger when matched",
+            "high": "Important - Trigger for most matches",
+            "medium": "Moderate - Trigger for clear matches",
+            "low": "Optional - Trigger only for explicit matches"
+        },
+        "project_structure": {
+            "frontend": "src/ui/ - React 19 frontend with Zustand state management",
+            "backend": "src/electron/ - Electron main process with IPC handlers",
+            "skills": "skills/ - Browser automation and other skills"
+        }
+    }
+}

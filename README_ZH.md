@@ -4,6 +4,8 @@
 
 **桌面 AI 助手**，帮助你完成**编程、文件管理以及任何你能描述的任务**。
 
+灵感来自 [Anthropic 的 Cowork](https://www.anthropic.com/news/cowork) — 通过友好的 GUI 并行运行多个 AI 任务。
+
 完全兼容 **Claude Code 配置**，可使用任意兼容 Anthropic 的大模型。
 
 > 不只是一个 GUI。
@@ -27,6 +29,7 @@ Claude Code 很强大 — 但它**只能在终端中运行**。
 
 - 作为**原生桌面应用**运行
 - 成为你的 **AI 协作伙伴**
+- **最多 3 个任务并行运行**
 - 复用你**现有的 `~/.claude/settings.json`**
 - 与 Claude Code **100% 兼容**
 
@@ -35,6 +38,23 @@ Claude Code 很强大 — 但它**只能在终端中运行**。
 ---
 
 ## 功能特性
+
+### 并行任务队列
+
+排队多个任务并同时运行：
+- **最多 3 个并发任务**并行运行
+- 浮动按钮快速添加任务
+- 实时任务状态追踪
+- 任务完成时弹出通知
+- 随时取消任务
+
+### 连接器与技能
+
+通过设置面板管理 MCP 服务器和技能：
+- **内置 MCP 服务器**：文件系统、Web 抓取、内存
+- 从 `~/.claude/skills/` **自动发现技能**
+- 开关连接器和技能
+- 配置偏好设置（最大任务数、自动启动、通知）
 
 ### 实时 Diff 可视化
 
@@ -49,6 +69,13 @@ Claude Code 很强大 — 但它**只能在终端中运行**。
 - 浏览网站并截图
 - 测试 Web 应用
 - 填写表单并与页面交互
+
+### 友好的用户体验
+
+- 新用户**欢迎界面**，含快速任务建议
+- **进度面板**显示实时活动和统计
+- **简化的工具显示**，使用友好的描述
+- 简洁、现代的界面
 
 ### 会话管理
 
@@ -84,7 +111,7 @@ Claude Code 很强大 — 但它**只能在终端中运行**。
 
 ```bash
 # 克隆仓库
-git clone <your-repo-url>
+git clone https://github.com/nicekid1/Claude-Cowork.git
 cd claude-cowork
 
 # 安装依赖
@@ -119,6 +146,33 @@ Claude Cowork **与 Claude Code 共享配置**。
 
 > 配置一次 Claude Code — 到处使用。
 
+### 设置面板
+
+通过侧边栏访问设置进行配置：
+
+| 设置 | 描述 |
+|------|------|
+| 连接器 | 启用/禁用 MCP 服务器 |
+| 技能 | 切换已发现的技能 |
+| 最大并发任务 | 1-5 个并行任务 |
+| 自动启动任务 | 自动启动排队的任务 |
+| 显示通知 | 任务完成时弹出提示 |
+
+---
+
+## 内置技能
+
+Claude Cowork 自动从 `~/.claude/skills/` 发现技能：
+
+| 技能 | 描述 |
+|------|------|
+| Dev Browser | 使用 Playwright 的浏览器自动化 |
+| Office Documents | 创建 Word、Excel、PowerPoint 文件 |
+| Backend Guidelines | Electron/Node.js 开发模式 |
+| Frontend Guidelines | React 19/TypeScript 最佳实践 |
+| Error Tracking | 错误处理模式 |
+| Skill Developer | 创建自定义技能 |
+
 ---
 
 ## 架构概览
@@ -147,14 +201,37 @@ npm run build
 npm run lint
 ```
 
+### 项目结构
+
+```
+src/
+├── ui/              # React 19 前端
+│   ├── components/  # UI 组件
+│   ├── store/       # Zustand 状态
+│   └── hooks/       # 自定义 hooks
+├── electron/        # Electron 主进程
+│   ├── libs/        # 核心库
+│   └── types.ts     # 共享类型
+└── skills/          # 打包的技能
+
+.claude/
+├── skills/          # 自动发现的技能
+├── hooks/           # 自动化钩子
+└── settings.json    # Claude Code 配置
+```
+
 ---
 
 ## 路线图
 
-- GUI 配置界面（模型和 API 密钥）
-- 多智能体协作
-- 自动检查点（Git 集成）
-- 项目记忆和上下文持久化
+- [x] 并行任务队列（最多 3 个并发）
+- [x] 连接器和技能设置面板
+- [x] 欢迎界面和进度面板
+- [x] Office 文档创建技能
+- [ ] GUI 配置界面（模型和 API 密钥）
+- [ ] 多智能体协作
+- [ ] 自动检查点（Git 集成）
+- [ ] 项目记忆和上下文持久化
 
 ---
 

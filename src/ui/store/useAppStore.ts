@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ServerEvent, SessionStatus, StreamMessage } from "../types";
+import type { ServerEvent, SessionStatus, StreamMessage, QueuedTask, CoworkSettings } from "../types";
 
 export type PermissionRequest = {
   toolUseId: string;
@@ -21,6 +21,17 @@ export type SessionView = {
   hydrated: boolean;
 };
 
+// Toast notification type
+export type ToastNotification = {
+  id: string;
+  type: "success" | "error" | "info";
+  title: string;
+  message?: string;
+  taskId?: string;
+  sessionId?: string;
+  createdAt: number;
+};
+
 interface AppState {
   sessions: Record<string, SessionView>;
   activeSessionId: string | null;
@@ -32,6 +43,14 @@ interface AppState {
   showStartModal: boolean;
   historyRequested: Set<string>;
 
+  // Task Queue State
+  taskQueue: QueuedTask[];
+  notifications: ToastNotification[];
+
+  // Settings State
+  settings: CoworkSettings | null;
+  showSettingsModal: boolean;
+
   setPrompt: (prompt: string) => void;
   setCwd: (cwd: string) => void;
   setPendingStart: (pending: boolean) => void;
@@ -41,6 +60,13 @@ interface AppState {
   markHistoryRequested: (sessionId: string) => void;
   resolvePermissionRequest: (sessionId: string, toolUseId: string) => void;
   handleServerEvent: (event: ServerEvent) => void;
+
+  // Task Queue Actions
+  addNotification: (notification: Omit<ToastNotification, "id" | "createdAt">) => void;
+  dismissNotification: (id: string) => void;
+
+  // Settings Actions
+  setShowSettingsModal: (show: boolean) => void;
 }
 
 function createSession(id: string): SessionView {
@@ -58,12 +84,46 @@ export const useAppStore = create<AppState>((set, get) => ({
   showStartModal: false,
   historyRequested: new Set(),
 
+  // Task Queue State
+  taskQueue: [],
+  notifications: [],
+
+  // Settings State
+  settings: null,
+  showSettingsModal: false,
+
   setPrompt: (prompt) => set({ prompt }),
   setCwd: (cwd) => set({ cwd }),
   setPendingStart: (pendingStart) => set({ pendingStart }),
   setGlobalError: (globalError) => set({ globalError }),
   setShowStartModal: (showStartModal) => set({ showStartModal }),
   setActiveSessionId: (id) => set({ activeSessionId: id }),
+
+  // Notification actions
+  addNotification: (notification) => {
+    const id = `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newNotification: ToastNotification = {
+      ...notification,
+      id,
+      createdAt: Date.now()
+    };
+    set((state) => ({
+      notifications: [...state.notifications, newNotification]
+    }));
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+      get().dismissNotification(id);
+    }, 5000);
+  },
+
+  dismissNotification: (id) => {
+    set((state) => ({
+      notifications: state.notifications.filter(n => n.id !== id)
+    }));
+  },
+
+  // Settings Actions
+  setShowSettingsModal: (showSettingsModal) => set({ showSettingsModal }),
 
   markHistoryRequested: (sessionId) => {
     set((state) => {
@@ -265,6 +325,60 @@ export const useAppStore = create<AppState>((set, get) => ({
             }
           };
         });
+        break;
+      }
+
+      // Task Queue Events
+      case "task.list": {
+        set({ taskQueue: event.payload.tasks });
+        break;
+      }
+
+      case "task.added": {
+        set((state) => ({
+          taskQueue: [...state.taskQueue, event.payload.task]
+        }));
+        break;
+      }
+
+      case "task.updated": {
+        const updatedTask = event.payload.task;
+        set((state) => ({
+          taskQueue: state.taskQueue.map(t =>
+            t.id === updatedTask.id ? updatedTask : t
+          )
+        }));
+        break;
+      }
+
+      case "task.removed": {
+        set((state) => ({
+          taskQueue: state.taskQueue.filter(t => t.id !== event.payload.taskId)
+        }));
+        break;
+      }
+
+      case "task.completed": {
+        const completedTask = event.payload.task;
+        // Remove from queue
+        set((state) => ({
+          taskQueue: state.taskQueue.filter(t => t.id !== completedTask.id)
+        }));
+        // Show notification
+        get().addNotification({
+          type: "success",
+          title: "Task completed",
+          message: completedTask.prompt.slice(0, 50) + (completedTask.prompt.length > 50 ? "..." : ""),
+          taskId: completedTask.id,
+          sessionId: completedTask.sessionId
+        });
+        break;
+      }
+
+      // Settings Events
+      case "settings.loaded":
+      case "settings.updated": {
+        set({ settings: event.payload.settings });
         break;
       }
     }

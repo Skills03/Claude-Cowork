@@ -52,7 +52,12 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
   }, [activeSession, activeSessionId, cwd, prompt, sendEvent, setGlobalError, setPendingStart, setPrompt]);
 
   const handleStop = useCallback(() => {
-    if (!activeSessionId) return;
+    console.log("[PromptInput] handleStop called, activeSessionId:", activeSessionId);
+    if (!activeSessionId) {
+      console.log("[PromptInput] No activeSessionId, returning");
+      return;
+    }
+    console.log("[PromptInput] Sending session.stop event");
     sendEvent({ type: "session.stop", payload: { sessionId: activeSessionId } });
   }, [activeSessionId, sendEvent]);
 
@@ -118,8 +123,17 @@ export function PromptInput({ sendEvent }: PromptInputProps) {
           ref={promptRef}
         />
         <button
+          type="button"
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${isRunning ? "bg-error text-white hover:bg-error/90" : "bg-accent text-white hover:bg-accent-hover"}`}
-          onClick={isRunning ? handleStop : handleSend}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            if (isRunning) {
+              handleStop();
+            } else {
+              handleSend();
+            }
+          }}
           aria-label={isRunning ? "Stop session" : "Send prompt"}
         >
           {isRunning ? (

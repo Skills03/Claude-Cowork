@@ -168,11 +168,43 @@ const AssistantBlockCard = ({ title, text, showIndicator = false }: { title: str
   </div>
 );
 
+// Helper to get friendly tool description
+const getFriendlyToolInfo = (toolName: string, input: Record<string, any>): { icon: string; action: string; detail: string } => {
+  const getFileName = (path?: string) => path?.split(/[\\/]/).pop() || path || "";
+
+  switch (toolName) {
+    case "Read":
+      return { icon: "📖", action: "Reading", detail: getFileName(input?.file_path) };
+    case "Write":
+      return { icon: "✏️", action: "Creating", detail: getFileName(input?.file_path) };
+    case "Edit":
+      return { icon: "📝", action: "Editing", detail: getFileName(input?.file_path) };
+    case "Bash":
+      return { icon: "⚡", action: "Running command", detail: input?.description || "" };
+    case "Glob":
+      return { icon: "🔍", action: "Finding files", detail: input?.pattern || "" };
+    case "Grep":
+      return { icon: "🔎", action: "Searching in files", detail: input?.pattern || "" };
+    case "Task":
+      return { icon: "🤖", action: "Working on", detail: input?.description || "" };
+    case "WebFetch":
+      return { icon: "🌐", action: "Fetching", detail: input?.url || "" };
+    case "WebSearch":
+      return { icon: "🔍", action: "Searching web", detail: input?.query || "" };
+    case "TodoWrite":
+      return { icon: "📋", action: "Updating plan", detail: "" };
+    default:
+      return { icon: "⚙️", action: toolName, detail: "" };
+  }
+};
+
 const ToolUseCard = ({ messageContent, showIndicator = false, writeBeforeContent = {} }: {
   messageContent: MessageContent;
   showIndicator?: boolean;
   writeBeforeContent?: Record<string, string | null>;
 }) => {
+  const [showDetails, setShowDetails] = useState(false);
+
   if (messageContent.type !== "tool_use") return null;
 
   const toolStatus = useToolStatus(messageContent.id);
@@ -184,17 +216,8 @@ const ToolUseCard = ({ messageContent, showIndicator = false, writeBeforeContent
     if (messageContent?.id && !toolStatusMap.has(messageContent.id)) setToolStatus(messageContent.id, "pending");
   }, [messageContent?.id]);
 
-  const getToolInfo = (): string | null => {
-    const input = messageContent.input as Record<string, any>;
-    switch (messageContent.name) {
-      case "Bash": return input?.command || null;
-      case "Read": case "Write": case "Edit": return input?.file_path || null;
-      case "Glob": case "Grep": return input?.pattern || null;
-      case "Task": return input?.description || null;
-      case "WebFetch": return input?.url || null;
-      default: return null;
-    }
-  };
+  const input = messageContent.input as Record<string, any>;
+  const friendlyInfo = getFriendlyToolInfo(messageContent.name, input);
 
   // Check if this is an Edit tool with diff data
   const isEditWithDiff = messageContent.name === "Edit" && messageContent.input;
@@ -207,15 +230,45 @@ const ToolUseCard = ({ messageContent, showIndicator = false, writeBeforeContent
   const writeFilePath = writeInput?.file_path;
   const hasWriteDiff = writeInput?.content !== undefined && writeFilePath && writeFilePath in writeBeforeContent;
 
+  // Skip TodoWrite in simplified view (it's internal)
+  if (messageContent.name === "TodoWrite") {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col gap-2 rounded-[1rem] bg-surface-tertiary px-3 py-2 mt-4 overflow-hidden">
-      <div className="flex flex-row items-center gap-2 min-w-0">
+    <div className="flex flex-col gap-2 rounded-[1rem] bg-surface-tertiary px-3 py-2.5 mt-4 overflow-hidden">
+      <div className="flex flex-row items-center gap-2.5 min-w-0">
         <StatusDot variant={statusVariant} isActive={isPending && showIndicator} isVisible={shouldShowDot} />
-        <div className="flex flex-row items-center gap-2 tool-use-item min-w-0 flex-1">
-          <span className="inline-flex items-center rounded-md text-accent py-0.5 text-sm font-medium shrink-0">{messageContent.name}</span>
-          <span className="text-sm text-muted truncate">{getToolInfo()}</span>
+        <span className="text-base flex-shrink-0">{friendlyInfo.icon}</span>
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-ink-800">{friendlyInfo.action}</span>
+            {isPending && <span className="text-xs text-muted animate-pulse">...</span>}
+          </div>
+          {friendlyInfo.detail && (
+            <span className="text-xs text-muted truncate">{friendlyInfo.detail}</span>
+          )}
         </div>
+        {/* Technical details toggle */}
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="text-xs text-muted hover:text-ink-600 transition-colors px-2 py-1 rounded"
+          title="Show technical details"
+        >
+          {showDetails ? "Hide" : "Details"}
+        </button>
       </div>
+
+      {/* Technical details (collapsed by default) */}
+      {showDetails && (
+        <div className="mt-2 pt-2 border-t border-ink-900/10">
+          <div className="text-[10px] text-muted uppercase tracking-wide mb-1">Tool: {messageContent.name}</div>
+          <pre className="text-xs text-ink-600 bg-surface rounded p-2 overflow-x-auto">
+            {JSON.stringify(input, null, 2)}
+          </pre>
+        </div>
+      )}
+
       {hasEditDiff && (
         <DiffViewer
           oldValue={editInput.old_string}

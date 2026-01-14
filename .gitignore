@@ -25,3 +25,10 @@ dist-electron
 *.sw?
 
 .env
+
+# Build outputs
+release/
+build/
+
+# Windows special files
+nul
